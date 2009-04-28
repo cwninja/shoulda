@@ -1,12 +1,38 @@
 module Shoulda
   class StaticContext < Context
+    MAGIC_TEST_CASE_INSTANCE_VARIABLES = %w{@method_name @loaded_fixtures @fixture_cache @_result @test_passed}
     undef_method :setup
     undef_method :teardown
 
     attr_accessor :post_setup_instance_variables
 
+    def setup_already_run?
+      !post_setup_instance_variables.nil?
+    end
+
     def static_setup(&blk)
       self.setup_blocks << blk
+    end
+
+    def run_all_setup_blocks(binding)
+      if setup_already_run?
+        post_setup_instance_variables.each do |name, value|
+          binding.send(:instance_variable_set, name, value)
+        end
+      else
+        run_parent_setup_blocks(binding)
+        run_current_setup_blocks(binding)
+        self.post_setup_instance_variables = {}
+        binding.send(:instance_variables).each do |name|
+          next if MAGIC_TEST_CASE_INSTANCE_VARIABLES.include? name
+          post_setup_instance_variables[name] = binding.send(:instance_variable_get, name)
+        end
+      end
+    end
+
+    def should(name, options = {})
+      raise ArgumentError, "Before should's are not valid in a StaticContext." if options[:before]
+      super
     end
 
     def create_test_from_should_hash(should)
@@ -17,24 +43,9 @@ module Shoulda
       end
 
       context = self
-      self.post_setup_instance_variables = nil
       test_unit_class.send(:define_method, test_name) do
-        begin
-          if context.post_setup_instance_variables.nil?
-            context.run_parent_setup_blocks(self)
-            should[:before].bind(self).call if should[:before]
-            context.run_current_setup_blocks(self)
-            context.post_setup_instance_variables = {}
-            self.instance_variables.each do |name|
-              context.post_setup_instance_variables[name] = instance_variable_get(name)
-            end
-          else
-            context.post_setup_instance_variables.each do |name, value|
-              self.instance_variable_set(name, value)
-            end
-          end
-          should[:block].bind(self).call
-        end
+        context.run_all_setup_blocks(self)
+        should[:block].bind(self).call
       end
     end
   end

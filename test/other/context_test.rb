@@ -137,6 +137,46 @@ class ContextTest < Test::Unit::TestCase # :nodoc:
     should "call should_eventually as we are not passing a block"
   end
 
+  context "context with basic setup" do
+    setup do
+      @magical_variable = ""
+    end
+
+    static_context "static context to stash a copy the parent context's state" do
+      [:first, :seccond, :third].each_with_index do |n, index|
+        should "the #{n} test should have #{index} chars in it" do
+          assert_equal "." * index, @magical_variable
+          @magical_variable << "."
+        end
+      end
+    end
+
+    [:first, :seccond, :third].each do |n|
+      should "the #{n} test should be a blank string" do
+        assert_equal "", @magical_variable
+        @magical_variable << "."
+      end
+    end
+  end
+
+  context "a static context" do
+    setup do
+      @context = Shoulda::StaticContext.new("foo", nil){}
+    end
+
+    should "not allow us to setup a teardown" do
+      assert !@context.respond_to?(:teardown)
+    end
+
+    should "not allow us to setup a should(.., :before) hook, as that would be silly" do
+      assert_raise(ArgumentError) { @context.should("foo", :before => proc{}){} }
+    end
+
+    should "not allow us to declare a setup, because that does not make it obvious as to what it is doing" do
+      assert !@context.respond_to?(:setup)
+    end
+  end
+
   static_context "static context with setup and teardown only run once" do
     static_setup do
       @@static_setup_var ||= 0
@@ -154,6 +194,23 @@ class ContextTest < Test::Unit::TestCase # :nodoc:
     [:first, :seccond].each do |n|
       should "have instance variables available in the #{n} should" do
         assert_equal 1, @instance_var
+      end
+    end
+
+    context "but this dynamic context should be run more than once" do
+      setup do
+        @variable_context_var = 0
+      end
+
+      should "have access to the static context variables" do
+        assert_equal 1, @instance_var
+      end
+
+      [:first, :seccond].each do |name|
+        should "have it's own variables available and correctly set on the #{name} time" do
+          @variable_context_var += 1
+          assert_equal 1, @variable_context_var
+        end
       end
     end
   end
