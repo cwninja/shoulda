@@ -170,6 +170,15 @@ module Shoulda
         context.build
       end
     end
+
+    def static_context(name, &blk)
+      if Shoulda.current_context
+        Shoulda.current_context.static_context(name, &blk)
+      else
+        context = Shoulda::StaticContext.new(name, self, &blk)
+        context.build
+      end
+    end
   end
 
   class Context # :nodoc:
@@ -202,6 +211,10 @@ module Shoulda
 
     def context(name, &blk)
       self.subcontexts << Context.new(name, self, &blk)
+    end
+
+    def static_context(name, &blk)
+      self.subcontexts << StaticContext.new(name, self, &blk)
     end
 
     def setup(&blk)

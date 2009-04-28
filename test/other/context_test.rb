@@ -137,6 +137,27 @@ class ContextTest < Test::Unit::TestCase # :nodoc:
     should "call should_eventually as we are not passing a block"
   end
 
+  static_context "static context with setup and teardown only run once" do
+    static_setup do
+      @@static_setup_var ||= 0
+      @@static_setup_var += 1
+      @instance_var ||= 0
+      @instance_var += 1
+    end
+
+    [:first, :seccond].each do |n|
+      should "have only run the setup once after the #{n} should" do
+        assert_equal 1, @@static_setup_var
+      end
+    end
+
+    [:first, :seccond].each do |n|
+      should "have instance variables available in the #{n} should" do
+        assert_equal 1, @instance_var
+      end
+    end
+  end
+
   context "context" do
     context "with nested subcontexts" do
       should_eventually "only print this statement once for a should_eventually"

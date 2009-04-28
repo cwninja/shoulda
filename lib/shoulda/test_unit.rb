@@ -1,4 +1,5 @@
 require 'shoulda/context'
+require 'shoulda/static_context'
 require 'shoulda/proc_extensions'
 require 'shoulda/assertions'
 require 'shoulda/macros'
