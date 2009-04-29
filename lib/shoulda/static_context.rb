@@ -1,5 +1,5 @@
 module Shoulda
-  class StaticContext < Context
+  class StaticContext < Context  # :nodoc:
     MAGIC_TEST_CASE_INSTANCE_VARIABLES = %w{@method_name @loaded_fixtures @fixture_cache @_result @test_passed}
     undef_method :setup
     undef_method :teardown

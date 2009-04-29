@@ -171,6 +171,66 @@ module Shoulda
       end
     end
 
+    # == Static Contexts
+    # A static context works much like a normal context. Appart from a few key differences:
+    #
+    # * It has a #static_setup instead of a #setup method.
+    # * Its static setup is only called once, no matter how many test cases, and sub contexts it contains.
+    # * Instance variables are shared for each method inside the context (so be careful not to change those variables inside assertions).
+    # * No matter how many shoulds are inside the static context, parent setups are only called once.
+    # * Instance variables set in the setup blocks of parent scopes are also shared.
+    # * <tt>before_should</tt> and <tt>should(..., :before => proc{})</tt> are unavailable.
+    # * teardown's are not possible.
+    #
+    # === Examples:
+    #
+    # In the example below, the the static_setup block is only called once.
+    #
+    #  class UserTest < Test::Unit::TestCase
+    #    static_context "A User instance" do
+    #      static_setup do
+    #        @user = User.find(:first)
+    #        @user.some_expensive_operation!
+    #      end
+    #
+    #      should "return its full name"
+    #        assert_equal 'John Doe', @user.full_name
+    #      end
+    #
+    #      should "return false when sent :has_profile?"
+    #        assert !@user.has_profile?
+    #      end
+    #    end
+    #  end
+    #
+    # In this example, the the setup block is called twice, once for all the static
+    # context's shoulds, and once for the test outside the static context ("should change name").
+    #
+    # class UserTest < Test::Unit::TestCase
+    #   context "A User instance" do
+    #     setup do
+    #       @user = User.find(:first)
+    #       @user.some_expensive_operation!
+    #     end
+    # 
+    #     should "have a mutable full_name" do
+    #       @user.full_name = 'Jane Doe'
+    #       assert_equal 'Jane Doe', @user.full_name
+    #     end
+    # 
+    #     static_context "only setup once" do
+    #       should "return its full name"
+    #         assert_equal 'John Doe', @user.full_name
+    #       end
+    # 
+    #       should "return false when sent :has_profile?"
+    #         assert @user.has_profile?
+    #       end
+    #     end
+    #   end
+    # end
+    #
+
     def static_context(name, &blk)
       if Shoulda.current_context
         Shoulda.current_context.static_context(name, &blk)
