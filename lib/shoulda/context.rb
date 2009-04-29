@@ -243,7 +243,7 @@ module Shoulda
     end
 
     def am_subcontext?
-      parent.kind_of?(Context) # my parent is the same class as myself.
+      parent.kind_of?(Context)
     end
 
     def test_unit_class
