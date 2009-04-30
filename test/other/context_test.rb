@@ -171,14 +171,10 @@ class ContextTest < Test::Unit::TestCase # :nodoc:
     should "not allow us to setup a should(.., :before) hook, as that would be silly" do
       assert_raise(ArgumentError) { @context.should("foo", :before => proc{}){} }
     end
-
-    should "not allow us to declare a setup, because that does not make it obvious as to what it is doing" do
-      assert !@context.respond_to?(:setup)
-    end
   end
 
   static_context "static context with setup and teardown only run once" do
-    static_setup do
+    setup do
       @@static_setup_var ||= 0
       @@static_setup_var += 1
       @instance_var ||= 0

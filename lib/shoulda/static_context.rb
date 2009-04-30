@@ -1,17 +1,12 @@
 module Shoulda
   class StaticContext < Context  # :nodoc:
     MAGIC_TEST_CASE_INSTANCE_VARIABLES = %w{@method_name @loaded_fixtures @fixture_cache @_result @test_passed}
-    undef_method :setup
     undef_method :teardown
 
     attr_accessor :post_setup_instance_variables
 
     def setup_already_run?
       !post_setup_instance_variables.nil?
-    end
-
-    def static_setup(&blk)
-      self.setup_blocks << blk
     end
 
     def run_all_setup_blocks(binding)

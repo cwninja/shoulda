@@ -174,8 +174,7 @@ module Shoulda
     # == Static Contexts
     # A static context works much like a normal context. Appart from a few key differences:
     #
-    # * It has a #static_setup instead of a #setup method.
-    # * Its static setup is only called once, no matter how many test cases, and sub contexts it contains.
+    # * Its static context's setup is only called once, no matter how many test cases, and sub contexts it contains.
     # * Instance variables are shared for each method inside the context (so be careful not to change those variables inside assertions).
     # * No matter how many shoulds are inside the static context, parent setups are only called once.
     # * Instance variables set in the setup blocks of parent scopes are also shared.
@@ -188,7 +187,7 @@ module Shoulda
     #
     #  class UserTest < Test::Unit::TestCase
     #    static_context "A User instance" do
-    #      static_setup do
+    #      setup do
     #        @user = User.find(:first)
     #        @user.some_expensive_operation!
     #      end
